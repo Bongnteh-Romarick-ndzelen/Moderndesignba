@@ -1,17 +1,88 @@
+import dotenv from 'dotenv';
+// Load environment variables specifically for this file
+dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env' });
+
+// Debug: Check if environment variables are loaded
+console.log('Environment variables loaded:', {
+    EMAIL_HOST: process.env.EMAIL_HOST ? 'Set' : 'Not set',
+    EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not set',
+    NODE_ENV: process.env.NODE_ENV
+});
+
 import Contact from '../../models/Contact.js';
 import { validationResult } from 'express-validator';
 import nodemailer from 'nodemailer';
 
-// Configure email transporter (update with your SMTP settings)
-const transporter = nodemailer.createTransporter({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+// Email configuration with fallbacks
+const createTransporter = () => {
+    // If no SMTP config, return null (email will be skipped)
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
+        console.log('SMTP configuration not found. Email notifications disabled.');
+        return null;
+    }
+
+    return nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.EMAIL_PORT || 587,
+        secure: process.env.EMAIL_SECURE === 'true',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+        tls: {
+            rejectUnauthorized: false // For self-signed certificates
+        }
+    });
+};
+
+const sendEmailNotification = async (contactData) => {
+    const transporter = createTransporter();
+
+    if (!transporter) {
+        console.log('Skipping email notification - no SMTP configuration');
+        return { success: false, reason: 'no_smtp_config' };
+    }
+
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || `"Construction Co" <${process.env.SMTP_USER}>`,
+            to: process.env.EMAIL_USER || 'contact@constructionco.com',
+            subject: `New Contact Form: ${contactData.subject || 'General Inquiry'}`,
+            html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">New Contact Form Submission</h2>
+          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb;">
+            <p><strong>Name:</strong> ${contactData.name}</p>
+            <p><strong>Email:</strong> ${contactData.email}</p>
+            <p><strong>Phone:</strong> ${contactData.phone || 'Not provided'}</p>
+            <p><strong>Subject:</strong> ${contactData.subject || 'Not specified'}</p>
+            <p><strong>Message:</strong></p>
+            <div style="background: white; padding: 15px; border-radius: 4px; border: 1px solid #e2e8f0;">
+              ${contactData.message.replace(/\n/g, '<br>')}
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 12px;">
+              <strong>Submitted:</strong> ${new Date().toLocaleString()} | 
+              <strong>IP:</strong> ${contactData.ipAddress}
+            </p>
+          </div>
+        </div>
+      `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log('Email notification sent successfully');
+        return { success: true };
+    } catch (error) {
+        console.error('Email notification failed:', error.message);
+
+        // Don't throw error, just return failure info
+        return {
+            success: false,
+            reason: 'smtp_error',
+            error: error.message
+        };
+    }
+};
 
 // Submit contact form
 export const submitContactForm = async (req, res) => {
@@ -41,29 +112,25 @@ export const submitContactForm = async (req, res) => {
 
         await newContact.save();
 
-        // Send email notification (optional)
-        try {
-            const mailOptions = {
-                from: process.env.EMAIL_HOST || 'noreply@constructionco.com',
-                to: process.env.EMAIL_USER || 'contact@constructionco.com',
-                subject: `New Contact Form: ${subject || 'General Inquiry'}`,
-                html: `
-                <h2>New Contact Form Submission</h2>
-                <p><strong>Name:</strong> ${name}</p>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-                <p><strong>Subject:</strong> ${subject || 'Not specified'}</p>
-                <p><strong>Message:</strong></p>
-                <p>${message}</p>
-                <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
-                `
-            };
+        // Send email notification (non-blocking)
+        const emailResult = await sendEmailNotification({
+            name,
+            email,
+            phone,
+            subject,
+            message,
+            ipAddress: newContact.ipAddress
+        });
 
-            await transporter.sendMail(mailOptions);
-        } catch (emailError) {
-            console.error('Email notification failed:', emailError);
-            // Don't fail the request if email fails
-        }
+        // Log contact submission
+        console.log('Contact form submitted:', {
+            id: newContact._id,
+            name,
+            email,
+            subject,
+            emailSent: emailResult.success,
+            emailError: emailResult.error
+        });
 
         res.status(201).json({
             success: true,
@@ -72,6 +139,10 @@ export const submitContactForm = async (req, res) => {
                 id: newContact._id,
                 name: newContact.name,
                 email: newContact.email
+            },
+            notification: {
+                emailSent: emailResult.success,
+                ...(emailResult.success ? {} : { emailError: 'Email notification failed but message was saved' })
             }
         });
 
