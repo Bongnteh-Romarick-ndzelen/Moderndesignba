@@ -61,7 +61,4 @@ ProfileSchema.pre('save', async function (next) {
     }
 });
 
-// Index
-ProfileSchema.index({ userId: 1 });
-
 export default mongoose.model('Profile', ProfileSchema);

@@ -110,6 +110,7 @@ export const createProfile = async (req, res) => {
         });
     }
 };
+
 export const updateProfile = async (req, res) => {
     try {
         const { id } = req.params;
@@ -139,26 +140,48 @@ export const updateProfile = async (req, res) => {
             });
         }
 
-        const { bio, location, country, phoneNumber, profileImage } = req.body;
-
-        const profile = await Profile.findOneAndUpdate(
-            { userId: id },
-            { bio, location, country, phoneNumber, profileImage },
-            { new: true, runValidators: true }
-        );
-
-        if (!profile) {
-            return res.status(404).json({
+        // Verify user exists
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(400).json({
                 success: false,
-                message: 'Profile not found'
+                message: 'User not found'
             });
         }
 
-        res.status(200).json({
-            success: true,
-            message: 'Profile updated successfully',
-            data: { profile }
-        });
+        const { bio, location, country, phoneNumber, profileImage } = req.body;
+
+        let profile = await Profile.findOne({ userId: id });
+
+        if (profile) {
+            // Update existing profile
+            profile = await Profile.findOneAndUpdate(
+                { userId: id },
+                { bio, location, country, phoneNumber, profileImage },
+                { new: true, runValidators: true }
+            );
+            return res.status(200).json({
+                success: true,
+                message: 'Profile updated successfully',
+                data: { profile }
+            });
+        } else {
+            // Create new profile
+            profile = new Profile({
+                userId: id,
+                bio,
+                location,
+                country,
+                phoneNumber,
+                profileImage
+            });
+            await profile.save();
+            return res.status(201).json({
+                success: true,
+                message: 'Profile created successfully',
+                data: { profile }
+            });
+        }
     } catch (error) {
         console.error('Error in updateProfile:', error);
         res.status(500).json({
@@ -168,6 +191,7 @@ export const updateProfile = async (req, res) => {
         });
     }
 };
+
 
 export const getProfile = async (req, res) => {
     try {
@@ -217,6 +241,7 @@ export const getProfile = async (req, res) => {
         });
     }
 };
+
 export const deleteProfile = async (req, res) => {
     try {
         const { id } = req.params;

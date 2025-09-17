@@ -9,7 +9,9 @@ import {
     bulkDeleteUsers,
     getUserStatistics,
     validateUserCreation,
-    validateUserUpdate
+    validateUserUpdate,
+    validateUserRoleChange,
+    changeUserRole
 } from '../../controllers/users/usersControllers.js';
 import { protect, restrictTo } from '../../middleware/auth.js';
 
@@ -703,5 +705,94 @@ router.delete('/:id', protect, restrictTo('admin'), deleteUser);
  *         description: Server error
  */
 router.patch('/:id/status', protect, restrictTo('admin'), updateUserStatus);
+
+/**
+ * @swagger
+ * /api/users/{id}/role:
+ *   patch:
+ *     summary: Change a user's role
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The user ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: ['user', 'admin']
+ *                 description: The new role for the user
+ *                 example: admin
+ *     responses:
+ *       200:
+ *         description: User role changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid user ID, role, or attempt to change own role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
+ */
+router.patch('/:id/role', protect, restrictTo('admin'), validateUserRoleChange, changeUserRole);
+
 
 export default router;

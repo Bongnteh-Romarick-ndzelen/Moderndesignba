@@ -106,7 +106,7 @@ router.post('/', protect, validateProfileCreation, createProfile);
  * @swagger
  * /api/profile/{id}:
  *   put:
- *     summary: Update a user profile
+ *     summary: Update or create a user profile
  *     tags: [Profile]
  *     security:
  *       - bearerAuth: []
@@ -165,6 +165,22 @@ router.post('/', protect, validateProfileCreation, createProfile);
  *                   properties:
  *                     profile:
  *                       $ref: '#/components/schemas/Profile'
+ *       201:
+ *         description: Profile created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     profile:
+ *                       $ref: '#/components/schemas/Profile'
  *       400:
  *         description: Validation error or invalid user ID
  *         content:
@@ -182,17 +198,6 @@ router.post('/', protect, validateProfileCreation, createProfile);
  *                     type: object
  *       403:
  *         description: Not authorized
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *       404:
- *         description: Profile not found
  *         content:
  *           application/json:
  *             schema:
