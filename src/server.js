@@ -36,7 +36,6 @@ import morgan from 'morgan';
 import net from 'net';
 import mongoose from 'mongoose';
 
-
 // Route imports
 import authRoutes from './routes/auth/Auth.js';
 import userRoutes from './routes/users/users.js';
@@ -49,6 +48,29 @@ import errorHandler from './middleware/errorHandler.js';
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// ===== Cookie Domain Configuration =====
+const getCookieDomain = () => {
+    if (process.env.NODE_ENV === 'production') {
+        // Use explicit domain if set, otherwise extract from FRONTEND_URL
+        if (process.env.COOKIE_DOMAIN) {
+            return process.env.COOKIE_DOMAIN;
+        }
+        if (process.env.FRONTEND_URL) {
+            try {
+                const url = new URL(process.env.FRONTEND_URL);
+                return url.hostname;
+            } catch (error) {
+                console.warn('Invalid FRONTEND_URL, using default domain');
+            }
+        }
+        // Default production domain
+        return 'modern-design-zeta.vercel.app';
+    }
+    return 'localhost'; // Development
+};
+
+const cookieDomain = getCookieDomain();
 
 // ===== Server Configuration =====
 app.set('trust proxy', 1); // Needed for secure cookies in production
@@ -137,7 +159,7 @@ const allowedOrigins = cleanOrigins.length > 0 ? cleanOrigins : [
     'https://modern-design-zeta.vercel.app',
     'http://localhost:3000',
     'http://localhost:5000',
-    'https://moderndesign.onrender.com'
+    'https://shielderabackend.onrender.com'
 ];
 
 console.log('Cleaned allowed origins:', allowedOrigins);
@@ -149,9 +171,8 @@ const corsOptions = {
 
         // Check if the origin is in the allowed list
         if (allowedOrigins.includes(origin) ||
-            origin.endsWith('.shielderas.org') ||
             // Allow the Render domain itself for internal requests
-            origin === 'https://moderndesign.onrender.com') {
+            origin === 'https://shielderabackend.onrender.com') {
             return callback(null, true);
         }
 
@@ -189,10 +210,11 @@ app.use(session({
         ttl: parseInt(process.env.SESSION_TTL) || 14 * 24 * 60 * 60
     }),
     cookie: {
-        secure: true,
-        sameSite: 'none',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         httpOnly: true,
         path: '/',
+        domain: cookieDomain,
         maxAge: parseInt(process.env.COOKIE_MAX_AGE) || 24 * 60 * 60 * 1000
     }
 }));
@@ -223,7 +245,7 @@ app.use('/api-docs', (req, res, next) => {
     const origin = req.headers.origin;
 
     // Allow if origin is in allowed list or if it's a direct request (no origin)
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.shielderas.org')) {
+    if (!origin || allowedOrigins.includes(origin)) {
         res.header('Access-Control-Allow-Origin', origin || '*');
         res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
         res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -264,8 +286,8 @@ const startServer = async () => {
         console.log(`\n🚀 Server started in ${process.env.NODE_ENV || 'development'} mode`);
         console.log(`📡 Listening on port ${PORT}`);
         console.log(`🌍 Allowed Origins: ${allowedOrigins.join(', ')}`);
-        console.log(`🔒 Secure Cookies: true`);
-        console.log(`🍪 Cookie Domain: ${process.env.NODE_ENV === 'production' ? '.shielderas.org' : 'localhost'}`);
+        console.log(`🔒 Secure Cookies: ${process.env.NODE_ENV === 'production'}`);
+        console.log(`🍪 Cookie Domain: ${cookieDomain}`);
         console.log(`🛡️ Session Store: MongoDB`);
 
         if (process.env.NODE_ENV !== 'production') {
