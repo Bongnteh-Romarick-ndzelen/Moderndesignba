@@ -67,7 +67,7 @@ export const sendVerificationEmail = async (user) => {
     try {
         const transporter = createTransporter();
 
-        const verificationUrl = `${process.env.CLIENT_URL || 'https://www.shielderas.org'}/verify-email?token=${user.emailVerificationToken}&email=${encodeURIComponent(user.email)}`;
+        const verificationUrl = `${process.env.CLIENT_URL || 'https://modern-design-zeta.vercel.app'}/verify-email?token=${user.emailVerificationToken}&email=${encodeURIComponent(user.email)}`;
 
         const mailOptions = {
             from: process.env.EMAIL_FROM || '"Modern Design" <no-reply@shieldera.com>',
@@ -165,11 +165,11 @@ export const sendVerificationEmail = async (user) => {
                         <div class="email-container">
                             <div class="header">
                                 <!-- Updated logo path -->
-                                <!--img src="/favicon-32x32.png" alt="Shieldera Logo" class="logo" --> SHIELDERAS
+                                <!--img src="/favicon-32x32.png" alt="Modern Design Logo" class="logo" --> Modern Design
                             </div>
                             
                             <div class="content">
-                                <h2>Welcome to Shielderas!</h2>
+                                <h2>Welcome to Modern Design!</h2>
                                 <p>Hi ${user.fullName},</p>
                                 <p>Thank you for signing up. Please verify your email address to complete your registration and access all features:</p>
                                 
@@ -186,7 +186,7 @@ export const sendVerificationEmail = async (user) => {
                             </div>
                             
                             <div class="footer">
-                                © ${new Date().getFullYear()} Shielderas. All rights reserved.<br>
+                                © ${new Date().getFullYear()} Modern Design. All rights reserved.<br>
                                 <small>123 Business Ave, Suite 100, San Francisco, CA 94107</small>
                             </div>
                         </div>
@@ -325,13 +325,13 @@ export const sendWelcomeEmail = async (user) => {
                     <body>
                         <div class="email-container">
                             <div class="header">
-                                SHIELDERAS
+                                Modern Design
                             </div>
                             
                             <div class="content">
-                                <h2>Welcome to Shielderas!</h2>
+                                <h2>Welcome to Modern Design!</h2>
                                 <p>Hi ${user.fullName},</p>
-                                <p>Congratulations! You're welcom to shielderas. Your email has been successfully verified and your account is now fully activated.</p>
+                                <p>Congratulations! You're welcom to Modern Design. Your email has been successfully verified and your account is now fully activated.</p>
                                 
                                 <p>You now have access to all features of our platform:</p>
                                 
@@ -343,20 +343,20 @@ export const sendWelcomeEmail = async (user) => {
                                 </ul>
                                 
                                 <div style="text-align: center;">
-                                    <a href="${process.env.CLIENT_URL || 'https://www.shielderas.org'}/dashboard/student" class="cta-button">Go to Dashboard</a>
+                                    <a href="${process.env.CLIENT_URL || 'https://modern-design-zeta.vercel.app'}/dashboard/student" class="cta-button">Go to Dashboard</a>
                                 </div>
                                 
                                 <div class="support-note">
-                                    <strong>Need help getting started?</strong> Check out our <a href="${process.env.CLIENT_URL || 'https://www.shielderas.org'}/help-center">Help Center</a> or contact our support team at support@shielderas.org.
+                                    <strong>Need help getting started?</strong> Check out our <a href="${process.env.CLIENT_URL || 'https://modern-design-zeta.vercel.app'}/help-center">Help Center</a> or contact our support team at support@Modern Design.org.
                                 </div>
                                 
                                 <p>We're excited to have you on board!</p>
                                 
-                                <p>Best regards,<br>The Shielderas Team</p>
+                                <p>Best regards,<br>The Modern Design Team</p>
                             </div>
                             
                             <div class="footer">
-                                © ${new Date().getFullYear()} Shielderas. All rights reserved.<br>
+                                © ${new Date().getFullYear()} Modern Design. All rights reserved.<br>
                                 <small>123 Business Ave, Suite 100, San Francisco, CA 94107</small>
                             </div>
                         </div>
@@ -493,13 +493,13 @@ export const sendPasswordResetEmail = async (user, resetToken) => {
                     <body>
                         <div class="email-container">
                             <div class="header">
-                                <!--img src="/favicon-32x32.png" alt="Shieldera Logo" class="logo"--> SHIELDERAS
+                                <!--img src="/favicon-32x32.png" alt="Shieldera Logo" class="logo"--> Modern Design
                             </div>
                             
                             <div class="content">
                                 <h2>Password Reset Request</h2>
                                 <p>Hi ${user.fullName},</p>
-                                <p>We received a request to reset your Shielderas account password. Click the button below to proceed:</p>
+                                <p>We received a request to reset your Modern Design account password. Click the button below to proceed:</p>
                                 
                                 <div style="text-align: center;">
                                     <a href="${resetUrl}" class="reset-button">Reset Password</a>
@@ -512,7 +512,7 @@ export const sendPasswordResetEmail = async (user, resetToken) => {
                                 
                                 <div class="security-note">
                                     <strong>Security notice:</strong> If you didn't request this password reset, please ignore this email or 
-                                    <a href="mailto:support@shielderas.org" style="color: #0066ff;">contact our support team</a> immediately.
+                                    <a href="mailto:ModernDesign.org" style="color: #0066ff;">contact our support team</a> immediately.
                                 </div>
                                 
                                 <p>For security reasons, we recommend:</p>
@@ -524,7 +524,7 @@ export const sendPasswordResetEmail = async (user, resetToken) => {
                             </div>
                             
                             <div class="footer">
-                                © ${new Date().getFullYear()} Shielderas Security Team<br>
+                                © ${new Date().getFullYear()} Modern Design Security Team<br>
                                 <small>123 Security Plaza, Suite 200, San Francisco, CA 94107</small>
                             </div>
                         </div>
@@ -570,7 +570,7 @@ export const sendPasswordResetSuccessEmail = async (user) => {
         const loginUrl = `${process.env.CLIENT_URL || `https://modern-design-zeta.vercel.app/login`}`;
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Modern Design Support" <support@shielderas.org>',
+            from: process.env.EMAIL_FROM || '"Modern Design Support" <support@ModernDesign.org>',
             to: user.email,
             subject: 'Password Reseted Successfully',
             html: `
@@ -670,7 +670,7 @@ export const sendPasswordResetSuccessEmail = async (user) => {
                     <body>
                         <div class="email-container">
                             <div class="header">
-                                <!--img src="/public/favicon-32x32.png" alt="Shieldera Logo" class="logo"--> SHIELDERAS
+                                <!--img src="/public/favicon-32x32.png" alt="Modern Design Logo" class="logo"--> Modern Design
                             </div>
                             
                             <div class="content">
@@ -689,7 +689,7 @@ export const sendPasswordResetSuccessEmail = async (user) => {
                                 
                                 <div class="security-note">
                                     <strong>Security notice:</strong> If you didn't reset your password,
-                                    <a href="mailto:support@shielderas.org" style="color: #0066ff;">contact our support team</a> immediately.
+                                    <a href="mailto:support@ModernDesign.org" style="color: #0066ff;">contact our support team</a> immediately.
                                 </div>
                                 
                                 <p>For security reasons, we recommend:</p>
@@ -701,7 +701,7 @@ export const sendPasswordResetSuccessEmail = async (user) => {
                             </div>
                             
                             <div class="footer">
-                                © ${new Date().getFullYear()} Shielderas Security Team<br>
+                                © ${new Date().getFullYear()} Modern Design Security Team<br>
                                 <small>123 Security Plaza, Suite 200, San Francisco, CA 94107</small>
                             </div>
                         </div>
