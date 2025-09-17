@@ -2,7 +2,6 @@ import express from 'express';
 import {
     createUser,
     getUsers,
-    getStudents,
     getUserById,
     updateUser,
     deleteUser,
@@ -313,93 +312,6 @@ router.get('/', protect, restrictTo('admin'), getUsers);
 
 /**
  * @swagger
- * /api/users/students:
- *   get:
- *     summary: Get all students
- *     description: Retrieve all users with student role (Admin only)
- *     tags: [User Management]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Number of students per page
- *       - in: query
- *         name: isEmailVerified
- *         schema:
- *           type: boolean
- *         description: Filter by email verification status
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Search by name or email
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           default: createdAt
- *         description: Field to sort by
- *       - in: query
- *         name: sortOrder
- *         schema:
- *           type: string
- *           enum: [asc, desc]
- *           default: desc
- *         description: Sort order
- *     responses:
- *       200:
- *         description: Students retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     students:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/User'
- *                     pagination:
- *                       type: object
- *                       properties:
- *                         currentPage:
- *                           type: integer
- *                         totalPages:
- *                           type: integer
- *                         totalStudents:
- *                           type: integer
- *                         limit:
- *                           type: integer
- *                         hasNext:
- *                           type: boolean
- *                         hasPrev:
- *                           type: boolean
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       403:
- *         $ref: '#/components/responses/ForbiddenError'
- *       500:
- *         description: Server error
- */
-router.get('/students', protect, restrictTo('admin'), getStudents);
-
-/**
- * @swagger
  * /api/users/statistics:
  *   get:
  *     summary: Get user statistics
@@ -462,7 +374,7 @@ router.get('/students', protect, restrictTo('admin'), getStudents);
  *       500:
  *         description: Server error
  */
-router.get('/statistics', protect, restrictTo(['admin']), getUserStatistics);
+router.get('/statistics', protect, restrictTo('admin'), getUserStatistics);
 
 /**
  * @swagger
