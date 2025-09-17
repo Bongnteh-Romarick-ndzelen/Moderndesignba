@@ -3,6 +3,7 @@ import { validationResult, body } from 'express-validator';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import User from '../../models/User.js';
+import mongoose from 'mongoose';
 
 // Load environment variables
 dotenv.config();
@@ -660,13 +661,288 @@ ${message}
 Best regards,
 ${adminName}
 ${adminEmail}
-            `,
+    `,
             html: `
-<p>Dear ${contact.name},</p>
-<p>Thank you for contacting us. Below is our response to your inquiry:</p>
-<p>${message.replace(/\n/g, '<br>')}</p>
-<p>Best regards,<br>${adminName}<br>${adminEmail}</p>
-            `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Response from ${adminName}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+                    
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+                    
+                    body {
+                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        line-height: 1.6;
+                        color: #374151;
+                        background-color: #f9fafb;
+                        padding: 20px;
+                    }
+                    
+                    .email-container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background: #ffffff;
+                        border-radius: 16px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    }
+                    
+                    .header {
+                        background: linear-gradient(135deg, #0066ff 0%, #0033aa 100%);
+                        padding: 32px;
+                        text-align: center;
+                        color: white;
+                    }
+                    
+                    .logo {
+                        font-size: 28px;
+                        font-weight: 700;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .tagline {
+                        font-size: 16px;
+                        opacity: 0.9;
+                        font-weight: 400;
+                    }
+                    
+                    .content {
+                        padding: 40px;
+                    }
+                    
+                    .greeting {
+                        font-size: 18px;
+                        font-weight: 500;
+                        color: #1f2937;
+                        margin-bottom: 24px;
+                    }
+                    
+                    .response-section {
+                        background: #f8fafc;
+                        padding: 24px;
+                        border-radius: 12px;
+                        border-left: 4px solid #3b82f6;
+                        margin: 24px 0;
+                    }
+                    
+                    .response-title {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #1e40af;
+                        margin-bottom: 16px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    
+                    .response-title::before {
+                        content: "💬";
+                        font-size: 18px;
+                    }
+                    
+                    .response-content {
+                        background: white;
+                        padding: 20px;
+                        border-radius: 8px;
+                        border: 1px solid #e5e7eb;
+                        font-size: 15px;
+                        line-height: 1.7;
+                        color: #4b5563;
+                    }
+                    
+                    .response-content p {
+                        margin-bottom: 12px;
+                    }
+                    
+                    .response-content p:last-child {
+                        margin-bottom: 0;
+                    }
+                    
+                    .original-message {
+                        background: #f0f9ff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        margin: 24px 0;
+                        border-left: 4px solid #0ea5e9;
+                    }
+                    
+                    .original-title {
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: #0369a1;
+                        margin-bottom: 12px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .original-content {
+                        background: white;
+                        padding: 16px;
+                        border-radius: 6px;
+                        border: 1px solid #e0f2fe;
+                        font-size: 14px;
+                        color: #64748b;
+                        font-style: italic;
+                    }
+                    
+                    .contact-info {
+                        background: #f1f5f9;
+                        padding: 20px;
+                        border-radius: 8px;
+                        margin: 24px 0;
+                        text-align: center;
+                    }
+                    
+                    .contact-title {
+                        font-size: 15px;
+                        font-weight: 600;
+                        color: #475569;
+                        margin-bottom: 12px;
+                    }
+                    
+                    .contact-details {
+                        display: flex;
+                        justify-content: center;
+                        gap: 24px;
+                        flex-wrap: wrap;
+                    }
+                    
+                    .contact-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 14px;
+                        color: #64748b;
+                    }
+                    
+                    .signature {
+                        margin-top: 32px;
+                        padding-top: 24px;
+                        border-top: 1px solid #e5e7eb;
+                    }
+                    
+                    .admin-name {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #1f2937;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .admin-role {
+                        font-size: 14px;
+                        color: #6b7280;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .admin-email {
+                        font-size: 14px;
+                        color: #3b82f6;
+                        text-decoration: none;
+                    }
+                    
+                    .footer {
+                        background: #f8fafc;
+                        padding: 24px;
+                        text-align: center;
+                        color: #6b7280;
+                        font-size: 12px;
+                        border-top: 1px solid #e5e7eb;
+                    }
+                    
+                    .footer-text {
+                        margin-bottom: 8px;
+                    }
+                    
+                    .company-address {
+                        font-size: 11px;
+                        opacity: 0.8;
+                    }
+                    
+                    @media (max-width: 600px) {
+                        .content {
+                            padding: 24px;
+                        }
+                        
+                        .header {
+                            padding: 24px;
+                        }
+                        
+                        .contact-details {
+                            flex-direction: column;
+                            gap: 12px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">MODERN DESIGN & CONSTRUCTION</div>
+                        <div class="tagline">Building Your Vision, Crafting Excellence</div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="greeting">
+                            Dear ${contact.name},
+                        </div>
+                        
+                        <p>Thank you for reaching out to us. We appreciate you taking the time to contact Modern Design & Construction Enterprise.</p>
+                        
+                        <div class="response-section">
+                            <div class="response-title">Our Response</div>
+                            <div class="response-content">
+                                ${message.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                        
+                        <div class="original-message">
+                            <div class="original-title">Your Original Message</div>
+                            <div class="original-content">
+                                "${contact.message.substring(0, 200)}${contact.message.length > 200 ? '...' : ''}"
+                            </div>
+                        </div>
+                        
+                        <div class="contact-info">
+                            <div class="contact-title">Need further assistance?</div>
+                            <div class="contact-details">
+                                <div class="contact-item">
+                                    <span>📧</span>
+                                    <span>support@constructionco.com</span>
+                                </div>
+                                <div class="contact-item">
+                                    <span>📞</span>
+                                    <span>+237 652 467 599</span>
+                                </div>
+                                <div class="contact-item">
+                                    <span>🕒</span>
+                                    <span>Mon-Fri 8:00 AM - 5:00 PM</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="signature">
+                            <div class="admin-name">${adminName}</div>
+                            <div class="admin-role">Customer Support Team</div>
+                            <a href="mailto:${adminEmail}" class="admin-email">${adminEmail}</a>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <div class="footer-text">© ${new Date().getFullYear()} Modern Design & Construction Enterprise. All rights reserved.</div>
+                        <div class="company-address">123 Construction Avenue, Yaoundé, Cameroon</div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
         };
 
         // Send email

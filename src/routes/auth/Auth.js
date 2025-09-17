@@ -12,6 +12,40 @@ const router = express.Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: The user's ID
+ *         fullName:
+ *           type: string
+ *           description: The user's full name
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: The user's email address
+ *         role:
+ *           type: string
+ *           enum: [user, admin]
+ *           description: The user's role
+ *         isEmailVerified:
+ *           type: boolean
+ *           description: Whether the user's email is verified
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: User creation timestamp
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: User update timestamp
+ */
+
+/**
+ * @swagger
  * /api/auth/signup:
  *   post:
  *     summary: Register a new user
@@ -30,7 +64,7 @@ const router = express.Router();
  *             properties:
  *               fullName:
  *                 type: string
- *                 example: "Roma ndze"
+ *                 example: "John Doe"
  *               email:
  *                 type: string
  *                 format: email
@@ -38,12 +72,17 @@ const router = express.Router();
  *               password:
  *                 type: string
  *                 format: password
- *                 minLength: 8
+ *                 minLength: 6
  *                 example: "securePassword123"
  *               confirmPassword:
  *                 type: string
  *                 format: password
  *                 example: "securePassword123"
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin]
+ *                 default: "user"
+ *                 example: "user"
  *     responses:
  *       201:
  *         description: User created successfully
@@ -61,69 +100,47 @@ const router = express.Router();
  *                   properties:
  *                     user:
  *                       $ref: '#/components/schemas/User'
+ *                     accessToken:
+ *                       type: string
  *       400:
  *         description: Validation error
- *       409:
- *         description: Email already exists
- *       500:
- *         description: Server error
- */
-/**
- * @swagger
- * /api/auth/signup:
- *   post:
- *     summary: Register a new user
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - fullName
- *               - email
- *               - password
- *               - role
- *             properties:
- *               fullName:
- *                 type: string
- *                 example: "John Doe"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "user@example.com"
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 6
- *                 example: "securePassword123"
- *              confirmPassword:
-    *                 type: string
-    *                 format: password
-    *                 example: "securePassword123"
- *               role:
- *                 type: string
- *                 enum: [user, admin]
- *                 default: "user"
- *     responses:
- *       201:
- *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
  *                 message:
  *                   type: string
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *                 accessToken:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       409:
+ *         description: Email already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
  *                   type: string
- *       400:
- *         description: Email already in use
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
 router.post('/signup', signup);
 
@@ -159,19 +176,105 @@ router.post('/signup', signup);
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
  *                 message:
  *                   type: string
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *                 accessToken:
- *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       $ref: '#/components/schemas/User'
+ *                     accessToken:
+ *                       type: string
  *       400:
  *         description: Invalid email or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
 router.post('/login', login);
 
+/**
+ * @swagger
+ * /api/auth/refresh-token:
+ *   post:
+ *     summary: Refresh JWT token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: The refresh token
+ *                 example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     accessToken:
+ *                       type: string
+ *       400:
+ *         description: Invalid refresh token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
+ */
 router.post('/refresh-token', refreshToken);
 
 /**
@@ -180,6 +283,8 @@ router.post('/refresh-token', refreshToken);
  *   post:
  *     summary: Log out user
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Logout successful
@@ -188,10 +293,23 @@ router.post('/refresh-token', refreshToken);
  *             schema:
  *               type: object
  *               properties:
+ *                 success:
+ *                   type: boolean
  *                 message:
  *                   type: string
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
 router.post('/logout', logout);
 
@@ -213,15 +331,47 @@ router.post('/logout', logout);
  *         required: true
  *         schema:
  *           type: string
+ *           format: email
  *         description: User email
  *     responses:
  *       200:
  *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       400:
  *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
+router.get('/verify-email', verifyEmail);
+
 /**
  * @swagger
  * /api/auth/resend-verification-email:
@@ -244,15 +394,52 @@ router.post('/logout', logout);
  *     responses:
  *       200:
  *         description: Verification email sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       404:
  *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
 router.post('/resend-verification-email', resendVerificationEmail);
-router.get('/verify-email', verifyEmail);
 
 /**
  * @swagger
@@ -284,14 +471,32 @@ router.get('/verify-email', verifyEmail);
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "If an account exists, a password reset link has been sent"
  *       400:
  *         description: Missing email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
 router.post('/forgot-password', forgotPassword);
 
@@ -319,14 +524,32 @@ router.post('/forgot-password', forgotPassword);
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Reset token is valid"
  *       400:
- *         description: Invalid/expired token
+ *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
 router.get('/verify-reset-token', verifyResetToken);
 
@@ -354,7 +577,7 @@ router.get('/verify-reset-token', verifyResetToken);
  *               newPassword:
  *                 type: string
  *                 format: password
- *                 minLength: 8
+ *                 minLength: 6
  *                 example: "NewSecurePassword123!"
  *               confirmPassword:
  *                 type: string
@@ -370,14 +593,32 @@ router.get('/verify-reset-token', verifyResetToken);
  *               properties:
  *                 success:
  *                   type: boolean
- *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Password has been reset successfully"
  *       400:
  *         description: Invalid token or password mismatch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
  */
 router.post('/reset-password', resetPassword);
 
