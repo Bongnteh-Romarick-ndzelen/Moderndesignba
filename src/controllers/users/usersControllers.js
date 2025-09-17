@@ -20,7 +20,7 @@ export const validateUserCreation = [
         .withMessage('Password must be at least 5 characters long'),
     body('role')
         .optional()
-        .isIn(['student', 'admin', 'instructor'])
+        .isIn(['user', 'admin'])
         .withMessage('Invalid role'),
     body('isEmailVerified')
         .optional()
@@ -46,7 +46,7 @@ export const validateUserUpdate = [
         .withMessage('Password must be at least 5 characters long'),
     body('role')
         .optional()
-        .isIn(['student', 'admin', 'instructor'])
+        .isIn(['user', 'admin'])
         .withMessage('Invalid role'),
     body('isEmailVerified')
         .optional()
