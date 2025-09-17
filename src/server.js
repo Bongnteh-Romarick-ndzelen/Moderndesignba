@@ -136,7 +136,8 @@ const cleanOrigins = (process.env.CORS_ORIGINS || '')
 const allowedOrigins = cleanOrigins.length > 0 ? cleanOrigins : [
     'https://modern-design-zeta.vercel.app',
     'http://localhost:3000',
-    'https://shielderabackend.onrender.com'
+    'http://localhost:5000',
+    'https://moderndesign.onrender.com'
 ];
 
 console.log('Cleaned allowed origins:', allowedOrigins);
@@ -150,7 +151,7 @@ const corsOptions = {
         if (allowedOrigins.includes(origin) ||
             origin.endsWith('.shielderas.org') ||
             // Allow the Render domain itself for internal requests
-            origin === 'https://shielderabackend.onrender.com') {
+            origin === 'https://moderndesign.onrender.com') {
             return callback(null, true);
         }
 

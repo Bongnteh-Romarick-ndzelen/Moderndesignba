@@ -70,7 +70,7 @@ export const sendVerificationEmail = async (user) => {
         const verificationUrl = `${process.env.CLIENT_URL || 'https://www.shielderas.org'}/verify-email?token=${user.emailVerificationToken}&email=${encodeURIComponent(user.email)}`;
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Shielderas" <no-reply@shieldera.com>',
+            from: process.env.EMAIL_FROM || '"Modern Design" <no-reply@shieldera.com>',
             to: user.email,
             subject: 'Verify your email address',
             html: `
@@ -237,9 +237,9 @@ export const sendWelcomeEmail = async (user) => {
         const transporter = createTransporter();
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Shielderas" <no-reply@shieldera.com>',
+            from: process.env.EMAIL_FROM || '"Modern Design" <no-reply@shieldera.com>',
             to: user.email,
-            subject: 'Welcome to Shielderas - Your Account is Verified!',
+            subject: 'Welcome to Modern Design - Your Account is Verified!',
             html: `
                 <html>
                     <head>
@@ -390,10 +390,10 @@ export const sendPasswordResetEmail = async (user, resetToken) => {
     try {
         const transporter = createTransporter();
 
-        const resetUrl = `${process.env.CLIENT_URL || 'https://www.shielderas.org'}/reset-password?token=${resetToken}&email=${encodeURIComponent(user.email)}`;
+        const resetUrl = `${process.env.CLIENT_URL || 'https://modern-design-zeta.vercel.app'}/reset-password?token=${resetToken}&email=${encodeURIComponent(user.email)}`;
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Shielderas Support" <support@shielderas.org>',
+            from: process.env.EMAIL_FROM || '"Modern Design Support" <support@moderndesign>',
             to: user.email,
             subject: 'Password Reset Request',
             html: `
@@ -567,10 +567,10 @@ export const sendPasswordResetSuccessEmail = async (user) => {
     try {
         const transporter = createTransporter();
 
-        const loginUrl = `${process.env.CLIENT_URL || `https://www.shielderas.org/login`}`;
+        const loginUrl = `${process.env.CLIENT_URL || `https://modern-design-zeta.vercel.app/login`}`;
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || '"Shielderas Support" <support@shielderas.org>',
+            from: process.env.EMAIL_FROM || '"Modern Design Support" <support@shielderas.org>',
             to: user.email,
             subject: 'Password Reseted Successfully',
             html: `
