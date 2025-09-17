@@ -2,6 +2,7 @@ import Contact from '../../models/Contact.js';
 import { validationResult, body } from 'express-validator';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import User from '../../models/User.js';
 
 // Load environment variables
 dotenv.config();
@@ -67,17 +68,7 @@ export const validateAdminReply = [
         .notEmpty()
         .withMessage('Reply message is required')
         .isLength({ max: 2000 })
-        .withMessage('Reply message cannot exceed 2000 characters'),
-    body('adminName')
-        .trim()
-        .notEmpty()
-        .withMessage('Admin name is required')
-        .isLength({ max: 100 })
-        .withMessage('Admin name cannot exceed 100 characters'),
-    body('adminEmail')
-        .isEmail()
-        .withMessage('Valid admin email is required')
-        .normalizeEmail()
+        .withMessage('Reply message cannot exceed 2000 characters')
 ];
 
 // Send contact form notification email
@@ -603,11 +594,12 @@ export const deleteContact = async (req, res) => {
     }
 };
 
-// Send admin reply to contact form submission (Admin only)
 export const sendAdminReply = async (req, res) => {
     try {
         const { id } = req.params;
-        const { message, adminName, adminEmail } = req.body;
+        const { message } = req.body;
+        const adminName = req.user.fullName;
+        const adminEmail = req.user.email;
 
         // Check for validation errors
         const errors = validationResult(req);
@@ -646,11 +638,10 @@ export const sendAdminReply = async (req, res) => {
 
         // Configure nodemailer transport
         const transporter = nodemailer.createTransport({
-            // Example using Gmail; replace with your email service configuration
             service: 'gmail',
             auth: {
-                user: process.env.EMAIL_USER, // Your email address
-                pass: process.env.EMAIL_PASS  // Your email password or app-specific password
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
             }
         });
 

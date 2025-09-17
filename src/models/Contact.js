@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const contactSchema = new mongoose.Schema({
+const ContactSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name is required'],
@@ -52,7 +52,7 @@ const contactSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-contactSchema.index({ email: 1, createdAt: -1 });
-contactSchema.index({ status: 1 });
+ContactSchema.index({ email: 1, createdAt: -1 });
+ContactSchema.index({ status: 1 });
 
 export default mongoose.model('Contact', ContactSchema);

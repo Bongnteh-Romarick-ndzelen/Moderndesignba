@@ -318,21 +318,11 @@ router.delete('/:id', protect, restrictTo('admin'), deleteContact);
  *             type: object
  *             required:
  *               - message
- *               - adminName
- *               - adminEmail
  *             properties:
  *               message:
  *                 type: string
  *                 description: The admin's reply message
  *                 maxLength: 2000
- *               adminName:
- *                 type: string
- *                 description: The name of the admin sending the reply
- *                 maxLength: 100
- *               adminEmail:
- *                 type: string
- *                 format: email
- *                 description: The email address of the admin
  *     responses:
  *       200:
  *         description: Reply sent successfully
@@ -413,7 +403,7 @@ router.delete('/:id', protect, restrictTo('admin'), deleteContact);
  *                 error:
  *                   type: string
  */
-router.post('/contacts/:id/reply', protect, restrictTo('admin'), validateAdminReply, sendAdminReply);
+router.post('/:id/reply', protect, restrictTo('admin'), validateAdminReply, sendAdminReply);
 
 /**
  * @swagger
