@@ -1,5 +1,5 @@
 import Contact from '../../models/Contact.js';
-import { validationResult } from 'express-validator';
+import { validationResult, body } from 'express-validator';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
@@ -60,6 +60,25 @@ const createTransporter = () => {
 
     return nodemailer.createTransport(config);
 };
+// Validation middleware for admin reply
+export const validateAdminReply = [
+    body('message')
+        .trim()
+        .notEmpty()
+        .withMessage('Reply message is required')
+        .isLength({ max: 2000 })
+        .withMessage('Reply message cannot exceed 2000 characters'),
+    body('adminName')
+        .trim()
+        .notEmpty()
+        .withMessage('Admin name is required')
+        .isLength({ max: 100 })
+        .withMessage('Admin name cannot exceed 100 characters'),
+    body('adminEmail')
+        .isEmail()
+        .withMessage('Valid admin email is required')
+        .normalizeEmail()
+];
 
 // Send contact form notification email
 const sendContactNotificationEmail = async (contactData) => {
@@ -580,6 +599,112 @@ export const deleteContact = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Internal server error'
+        });
+    }
+};
+
+// Send admin reply to contact form submission (Admin only)
+export const sendAdminReply = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { message, adminName, adminEmail } = req.body;
+
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        // Validate contact ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid contact ID'
+            });
+        }
+
+        // Check if contact exists
+        const contact = await Contact.findById(id);
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact form submission not found'
+            });
+        }
+
+        // Check if user is admin
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized to reply to contact submissions'
+            });
+        }
+
+        // Configure nodemailer transport
+        const transporter = nodemailer.createTransport({
+            // Example using Gmail; replace with your email service configuration
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER, // Your email address
+                pass: process.env.EMAIL_PASS  // Your email password or app-specific password
+            }
+        });
+
+        // Email options
+        const mailOptions = {
+            from: `"${adminName}" <${adminEmail}>`,
+            to: contact.email,
+            subject: `Re: ${contact.subject || 'Your Contact Form Submission'}`,
+            text: `
+Dear ${contact.name},
+
+Thank you for contacting us. Below is our response to your inquiry:
+
+${message}
+
+Best regards,
+${adminName}
+${adminEmail}
+            `,
+            html: `
+<p>Dear ${contact.name},</p>
+<p>Thank you for contacting us. Below is our response to your inquiry:</p>
+<p>${message.replace(/\n/g, '<br>')}</p>
+<p>Best regards,<br>${adminName}<br>${adminEmail}</p>
+            `
+        };
+
+        // Send email
+        await transporter.sendMail(mailOptions);
+
+        // Update contact with admin response
+        contact.adminResponse = {
+            message,
+            adminName,
+            adminEmail,
+            respondedAt: new Date()
+        };
+        contact.status = 'replied';
+        await contact.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Reply sent successfully',
+            data: {
+                contactId: contact._id,
+                adminResponse: contact.adminResponse
+            }
+        });
+    } catch (error) {
+        console.error('Error in sendAdminReply:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while sending reply',
+            error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
         });
     }
 };

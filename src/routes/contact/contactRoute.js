@@ -4,7 +4,9 @@ import {
     getContacts,
     getContact,
     updateContactStatus,
-    deleteContact
+    deleteContact,
+    sendAdminReply,
+    validateAdminReply
 } from '../../controllers/contact/contactController.js';
 import { contactValidation } from '../../middleware/validation.js';
 import { protect, restrictTo } from '../../middleware/auth.js';
@@ -292,6 +294,126 @@ router.put('/:id/status', protect, restrictTo('admin'), updateContactStatus);
  *         description: Internal server error
  */
 router.delete('/:id', protect, restrictTo('admin'), deleteContact);
+
+/**
+ * @swagger
+ * /api/contact/{id}/reply:
+ *   post:
+ *     summary: Send an admin reply to a contact form submission
+ *     tags: [Contact]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the contact form submission
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - message
+ *               - adminName
+ *               - adminEmail
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 description: The admin's reply message
+ *                 maxLength: 2000
+ *               adminName:
+ *                 type: string
+ *                 description: The name of the admin sending the reply
+ *                 maxLength: 100
+ *               adminEmail:
+ *                 type: string
+ *                 format: email
+ *                 description: The email address of the admin
+ *     responses:
+ *       200:
+ *         description: Reply sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     contactId:
+ *                       type: string
+ *                     adminResponse:
+ *                       type: object
+ *                       properties:
+ *                         message:
+ *                           type: string
+ *                         adminName:
+ *                           type: string
+ *                         adminEmail:
+ *                           type: string
+ *                         respondedAt:
+ *                           type: string
+ *                           format: date-time
+ *       400:
+ *         description: Validation error or invalid contact ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       403:
+ *         description: Not authorized (non-admin user)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       404:
+ *         description: Contact form submission not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 error:
+ *                   type: string
+ */
+router.post('/contacts/:id/reply', protect, restrictTo('admin'), validateAdminReply, sendAdminReply);
 
 /**
  * @swagger

@@ -33,6 +33,12 @@ const contactSchema = new mongoose.Schema({
         enum: ['new', 'read', 'replied', 'archived'],
         default: 'new'
     },
+    adminResponse: {
+        message: String,
+        adminName: String,
+        adminEmail: String, // Add admin email field
+        respondedAt: Date
+    },
     ipAddress: {
         type: String,
         default: ''
@@ -49,4 +55,4 @@ const contactSchema = new mongoose.Schema({
 contactSchema.index({ email: 1, createdAt: -1 });
 contactSchema.index({ status: 1 });
 
-export default mongoose.model('Contact', contactSchema);
+export default mongoose.model('Contact', ContactSchema);
