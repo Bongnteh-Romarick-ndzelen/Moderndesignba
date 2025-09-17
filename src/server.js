@@ -40,6 +40,7 @@ import mongoose from 'mongoose';
 import authRoutes from './routes/auth/Auth.js';
 import userRoutes from './routes/users/users.js';
 import contactRoutes from './routes/contact/contactRoute.js';
+import profileRoutes from './routes/profile/profile.js';
 
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from '../config/swagger.js';
@@ -237,6 +238,7 @@ app.get('/health', (req, res) => res.json({
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/profile', profileRoutes);
 
 // ===== Swagger Docs =====
 // More permissive CORS for Swagger
