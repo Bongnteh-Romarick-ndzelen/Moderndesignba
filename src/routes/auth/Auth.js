@@ -30,7 +30,7 @@ const router = express.Router();
  *             properties:
  *               fullName:
  *                 type: string
- *                 example: "John Doe"
+ *                 example: "Roma ndze"
  *               email:
  *                 type: string
  *                 format: email
@@ -84,9 +84,7 @@ const router = express.Router();
  *               - fullName
  *               - email
  *               - password
- *               - country
- *               - city
- *               - phoneNumber
+ *               - role
  *             properties:
  *               fullName:
  *                 type: string
@@ -100,19 +98,14 @@ const router = express.Router();
  *                 format: password
  *                 minLength: 6
  *                 example: "securePassword123"
- *               country:
+ *              confirmPassword:
+    *                 type: string
+    *                 format: password
+    *                 example: "securePassword123"
+ *               role:
  *                 type: string
- *                 example: "United States"
- *               city:
- *                 type: string
- *                 example: "New York"
- *               phoneNumber:
- *                 type: string
- *                 example: "+1234567890"
- *               userType:
- *                 type: string
- *                 enum: [student, instructor, employer, admin, mentor]
- *                 default: "student"
+ *                 enum: [user, admin]
+ *                 default: "user"
  *     responses:
  *       201:
  *         description: User created successfully
