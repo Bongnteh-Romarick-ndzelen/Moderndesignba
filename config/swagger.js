@@ -15,7 +15,7 @@ const options = {
                 description: 'Local development server'
             },
             {
-                url: process.env.PRODUCTION_URL || 'https://shielderabackend.onrender.com',
+                url: process.env.PRODUCTION_URL || 'https://moderndesign.onrender.com',
                 description: 'Production server'
             }
         ],
